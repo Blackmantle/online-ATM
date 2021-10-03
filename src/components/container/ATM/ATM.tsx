@@ -1,11 +1,15 @@
 import { useState } from "react";
-import Box from "@material-ui/core/Box";
-import Typography from "@material-ui/core/Typography";
+import { initBills, billsImages } from "./data";
+import { Box, Typography, FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
 import CurrencyInput from "components/presentational/CurrencyInput";
 
 const ATM = () => {
+  const [currentBills, setCurrentBills] = useState(0);
+  const [bills, setBills] = useState(initBills[currentBills]);
+  const [issuedBills, setIssuedBills] = useState();
   const [withdrawal, setWithdraw] = useState("");
 
+  const changeCurrentBills = (e: any) => setCurrentBills(e.target.value);
   const changeWithdraw = (value: string) => setWithdraw(value);
 
   return (
@@ -19,6 +23,35 @@ const ATM = () => {
       >
         Онлайн-банкомат
       </Typography>
+      <Box minWidth={120} mb={4}>
+        <FormControl fullWidth>
+          <InputLabel id="bills-label">Набор купюр</InputLabel>
+          <Select
+            labelId="bills-label"
+            id="bills-select"
+            value={currentBills}
+            onChange={changeCurrentBills}
+            label="Набор купюр"
+            SelectDisplayProps={{
+              style: {
+                display: 'flex',
+              },
+            }}
+          >
+            {initBills.map((bills, id) => (
+              <MenuItem key={id} value={id}>
+                <Typography>{id+1}. </Typography>
+                {Object.entries(bills).map(([key, value]) => (
+                  <Box key={id+key} display="flex" mx={1}>
+                    <img width={50} src={billsImages[key]} />
+                    <Typography> x{value}</Typography>
+                  </Box>
+                ))}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
       <CurrencyInput value={withdrawal} onChange={changeWithdraw} />
     </Box>
   );
