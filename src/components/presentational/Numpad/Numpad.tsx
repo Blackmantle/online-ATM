@@ -1,9 +1,9 @@
-import IProps from "./types";
+import PropsType from "./types";
 import useStyles from "./styled";
 import { Button } from "@material-ui/core";
 import BackspaceIcon from "@material-ui/icons/Backspace";
 
-const Numpad = ({ value = "", onChange }: IProps) => {
+const Numpad = ({ value = "", onChange }: PropsType) => {
   const classes = useStyles();
 
   const handleChange = (symbol: string) => onChange && onChange(value + symbol);

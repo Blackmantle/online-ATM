@@ -1,4 +1,6 @@
-export default interface IProps {
-  value?: string,
+type PropsType = {
+  value?: string;
   onChange?: (value: string) => void;
 };
+
+export default PropsType;

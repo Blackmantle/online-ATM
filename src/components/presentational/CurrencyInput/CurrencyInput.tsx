@@ -1,11 +1,11 @@
 import { useState, useRef } from "react";
-import IProps from "./types";
+import PropsType from "./types";
 import { currencyFormat, escapeRegExp } from "./utils";
 import { TextField, InputAdornment, Tooltip, IconButton, Popover, Box } from "@material-ui/core";
 import KeyboardIcon from "@material-ui/icons/Keyboard";
 import Numpad from "components/presentational/Numpad";
 
-const CurrencyInput = ({ value = "", onChange }: IProps) => {
+const CurrencyInput = ({ value = "", onChange, ...rest }: PropsType) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const containerRef = useRef(null);
 
@@ -14,7 +14,7 @@ const CurrencyInput = ({ value = "", onChange }: IProps) => {
 
   const handleChange = (v: string) => {
     const str = escapeRegExp(v);
-    const regex = /^[1-9]\d*(((,\d{3}){1})?(\.\d{0,2})?)$/;
+    const regex = /^$|^[1-9]\d*(((,\d{3}){1})?(\.\d{0,2})?)$/;
     regex.test(str) && onChange && onChange(str);
   };
 
@@ -38,6 +38,7 @@ const CurrencyInput = ({ value = "", onChange }: IProps) => {
         }}
         label="Введите нужную сумму"
         fullWidth
+        {...rest}
       />
       <Popover
         id={popperId}

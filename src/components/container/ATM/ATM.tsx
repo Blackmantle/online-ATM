@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { initBills, billsImages } from "./data";
+import { FormValues } from "./types";
+import { useForm, Controller } from "react-hook-form";
 import {
   Box,
   Typography,
@@ -10,6 +12,7 @@ import {
   Tooltip,
   IconButton,
   Popover,
+  Button,
 } from "@material-ui/core";
 import InfoIcon from "@material-ui/icons/Info";
 import CurrencyInput from "components/presentational/CurrencyInput";
@@ -18,8 +21,10 @@ const ATM = () => {
   const [currentBills, setCurrentBills] = useState(0);
   const [bills, setBills] = useState(initBills[currentBills]);
   const [issuedBills, setIssuedBills] = useState();
-  const [withdrawal, setWithdraw] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
+  const { handleSubmit, control, formState: { errors } } = useForm<FormValues>();
+
+  const onSubmit = (data: FormValues) => console.log(data);
 
   const openBillsInfo = (e: any) => setAnchorEl(e.currentTarget);
   const closeBillsInfo = () => setAnchorEl(null);
@@ -29,7 +34,6 @@ const ATM = () => {
     setCurrentBills(value);
     setBills(initBills[value]);
   };
-  const changeWithdraw = (value: string) => setWithdraw(value);
 
   const isBillsInfoOpen = Boolean(anchorEl);
   const popperId = isBillsInfoOpen ? "bills-info-popper" : undefined;
@@ -67,34 +71,56 @@ const ATM = () => {
           </Select>
         </FormControl>
       </Box>
-      <Box display="flex">
-        <CurrencyInput value={withdrawal} onChange={changeWithdraw} />
-        <Tooltip title="Оставшиеся купюры">
-          <IconButton onClick={openBillsInfo} aria-describedby={popperId} sx={{ ml: 1 }}>
-            <InfoIcon color={isBillsInfoOpen ? "primary" : "inherit"} />
-          </IconButton>
-        </Tooltip>
-        <Popover
-          id={popperId}
-          open={isBillsInfoOpen}
-          anchorEl={anchorEl}
-          onClose={closeBillsInfo}
-          anchorOrigin={{
-            horizontal: "left",
-            vertical: "bottom",
-          }}
-        >
-          <Box p={1}>
-            <Typography variant="h4" m={1} fontWeight="bold" fontSize={20}>Оставшиеся купюры</Typography>
-            {Object.entries(bills).map(([key, value]) => (
-              <Box key={key} display="flex" alignItems="center" m={2}>
-                <Typography mr={1}>{value} x </Typography>
-                <img width={100} src={billsImages[key]} />
-              </Box>
-            ))}
-          </Box>
-        </Popover>
+      <Box component="form" width="100%" onSubmit={handleSubmit(onSubmit)}>
+        <Box display="flex">
+          <Controller
+            control={control}
+            name="withdrawal"
+            defaultValue=""
+            render={({ field: { value, onChange } }) => (
+              <CurrencyInput
+                value={value}
+                onChange={onChange}
+                error={!!errors.withdrawal}
+                helperText={errors.withdrawal?.message}
+              />
+            )}
+            rules={{
+              validate: (v: string) => +v >= 50 || "Сумма вывода должна быть не менее 50 руб.",
+            }}
+          />
+          <Tooltip title="Оставшиеся купюры">
+            <IconButton onClick={openBillsInfo} aria-describedby={popperId} sx={{ ml: 1 }}>
+              <InfoIcon color={isBillsInfoOpen ? "primary" : "inherit"} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+        <Button type="submit" variant="contained" sx={{ mt: 2, marginLeft: "auto" }} fullWidth>
+          Выдача
+        </Button>
       </Box>
+      <Popover
+        id={popperId}
+        open={isBillsInfoOpen}
+        anchorEl={anchorEl}
+        onClose={closeBillsInfo}
+        anchorOrigin={{
+          horizontal: "left",
+          vertical: "bottom",
+        }}
+      >
+        <Box p={1}>
+          <Typography variant="h4" m={1} fontWeight="bold" fontSize={20}>
+            Оставшиеся купюры
+          </Typography>
+          {Object.entries(bills).map(([key, value]) => (
+            <Box key={key} display="flex" alignItems="center" m={2}>
+              <Typography mr={1}>{value} x </Typography>
+              <img width={100} src={billsImages[key]} />
+            </Box>
+          ))}
+        </Box>
+      </Popover>
     </Box>
   );
 };
