@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import IProps from "./types";
 import { currencyFormat, escapeRegExp } from "./utils";
-import { TextField, InputAdornment, IconButton, Popover, Box } from "@material-ui/core";
+import { TextField, InputAdornment, Tooltip, IconButton, Popover, Box } from "@material-ui/core";
 import KeyboardIcon from "@material-ui/icons/Keyboard";
 import Numpad from "components/presentational/Numpad";
 
@@ -21,16 +21,18 @@ const CurrencyInput = ({ value = "", onChange }: IProps) => {
   const isNumpadOpen = Boolean(anchorEl);
   const popperId = isNumpadOpen ? "numpad-popper" : undefined;
   return (
-    <div ref={containerRef}>
+    <Box ref={containerRef} width="100%">
       <TextField
         value={currencyFormat(value)}
         onChange={(e) => handleChange(e.target.value)}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton onClick={openNumpad} aria-describedby={popperId}>
-                <KeyboardIcon color={isNumpadOpen ? "primary" : "inherit"} />
-              </IconButton>
+              <Tooltip title="Нумпад">
+                <IconButton onClick={openNumpad} aria-describedby={popperId}>
+                  <KeyboardIcon color={isNumpadOpen ? "primary" : "inherit"} />
+                </IconButton>
+              </Tooltip>
             </InputAdornment>
           ),
         }}
@@ -54,7 +56,7 @@ const CurrencyInput = ({ value = "", onChange }: IProps) => {
           <Numpad value={value} onChange={handleChange} />
         </Box>
       </Popover>
-    </div>
+    </Box>
   );
 };
 
