@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import PropsType from "./types";
-import { currencyFormat, escapeRegExp } from "./utils";
+import { checkCurrencyFormat } from "utils";
+import NumberFormat, { NumberFormatValues } from "react-number-format";
 import { TextField, InputAdornment, Tooltip, IconButton, Popover, Box } from "@material-ui/core";
 import KeyboardIcon from "@material-ui/icons/Keyboard";
 import Numpad from "components/presentational/Numpad";
@@ -8,23 +9,28 @@ import Numpad from "components/presentational/Numpad";
 const CurrencyInput = ({ value = "", onChange, ...rest }: PropsType) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const containerRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef?.current?.focus();
+    inputRef?.current?.blur();
+  }, []);
 
   const openNumpad = () => setAnchorEl(containerRef.current);
   const closeNumpad = () => setAnchorEl(null);
 
-  const handleChange = (v: string) => {
-    const str = escapeRegExp(v);
-    const regex = /^$|^[1-9]\d*(((,\d{3}){1})?(\.\d{0,2})?)$/;
-    regex.test(str) && onChange && onChange(str);
-  };
+  const handleInputChange = ({ value: v }: NumberFormatValues) => onChange && onChange(v);
+  const handleNumpadChange = (v: string) => checkCurrencyFormat(v) && onChange && onChange(v);
 
   const isNumpadOpen = Boolean(anchorEl);
   const popperId = isNumpadOpen ? "numpad-popper" : undefined;
   return (
     <Box ref={containerRef} width="100%">
-      <TextField
-        value={currencyFormat(value)}
-        onChange={(e) => handleChange(e.target.value)}
+      <NumberFormat
+        inputRef={inputRef}
+        value={value}
+        onValueChange={handleInputChange}
+        customInput={TextField}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
@@ -36,7 +42,11 @@ const CurrencyInput = ({ value = "", onChange, ...rest }: PropsType) => {
             </InputAdornment>
           ),
         }}
-        label="Введите нужную сумму"
+        label="Введите нужную сумму (₽)"
+        decimalScale={2}
+        allowNegative={false}
+        thousandSeparator
+        isNumericString
         fullWidth
         {...rest}
       />
@@ -45,16 +55,11 @@ const CurrencyInput = ({ value = "", onChange, ...rest }: PropsType) => {
         open={isNumpadOpen}
         anchorEl={anchorEl}
         onClose={closeNumpad}
-        anchorOrigin={{
-          horizontal: 'left',
-          vertical: 'bottom',
-        }}
-        PaperProps={{
-          elevation: 0,
-        }}
+        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+        PaperProps={{ elevation: 0 }}
       >
         <Box mt={1}>
-          <Numpad value={value} onChange={handleChange} />
+          <Numpad value={value} onChange={handleNumpadChange} />
         </Box>
       </Popover>
     </Box>

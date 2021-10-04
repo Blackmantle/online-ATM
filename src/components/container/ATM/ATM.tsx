@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { initBills, billsImages } from "./data";
-import { FormValues } from "./types";
+import { formValuesType } from "./types";
+import { makeWithdrawal, billsAmount, currencyFormat } from "utils";
+import { billsType } from "utils/types";
 import { useForm, Controller } from "react-hook-form";
 import {
   Box,
@@ -20,11 +22,19 @@ import CurrencyInput from "components/presentational/CurrencyInput";
 const ATM = () => {
   const [currentBills, setCurrentBills] = useState(0);
   const [bills, setBills] = useState(initBills[currentBills]);
-  const [issuedBills, setIssuedBills] = useState();
+  const [takenBills, setTakenBills] = useState<billsType>();
+  const [remainder, setRemainder] = useState("");
+  const [isBillsOut, setIsBillsOut] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const { handleSubmit, control, formState: { errors } } = useForm<FormValues>();
+  const { handleSubmit, control, formState: { errors } } = useForm<formValuesType>();
 
-  const onSubmit = (data: FormValues) => console.log(data);
+  const onSubmit = ({ withdrawal }: formValuesType) => {
+    const { remainder, takenBills, remainingBills } = makeWithdrawal(+withdrawal, bills);
+    setRemainder(remainder);
+    setTakenBills(takenBills);
+    setBills(remainingBills);
+    billsAmount(bills) === 0 && setIsBillsOut(true);
+  };
 
   const openBillsInfo = (e: any) => setAnchorEl(e.currentTarget);
   const closeBillsInfo = () => setAnchorEl(null);
@@ -33,6 +43,9 @@ const ATM = () => {
     const { value } = e.target;
     setCurrentBills(value);
     setBills(initBills[value]);
+    setTakenBills(undefined);
+    setRemainder("");
+    setIsBillsOut(false);
   };
 
   const isBillsInfoOpen = Boolean(anchorEl);
@@ -89,25 +102,54 @@ const ATM = () => {
               validate: (v: string) => +v >= 50 || "Сумма вывода должна быть не менее 50 руб.",
             }}
           />
-          <Tooltip title="Оставшиеся купюры">
-            <IconButton onClick={openBillsInfo} aria-describedby={popperId} sx={{ ml: 1 }}>
-              <InfoIcon color={isBillsInfoOpen ? "primary" : "inherit"} />
-            </IconButton>
-          </Tooltip>
+          <Box p={1}>
+            <Tooltip title="Оставшиеся купюры">
+              <IconButton onClick={openBillsInfo} aria-describedby={popperId}>
+                <InfoIcon color={isBillsInfoOpen ? "primary" : "inherit"} />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
         <Button type="submit" variant="contained" sx={{ mt: 2, marginLeft: "auto" }} fullWidth>
           Выдача
         </Button>
+      </Box>
+      <Box mt={3}>
+        {!isBillsOut ? (
+          <Box>
+            {takenBills && (
+              <Box>
+                <Typography variant="h4" fontWeight="bold" fontSize={22}>
+                  Выданные купюры:
+                </Typography>
+                <Box>
+                  {Object.entries(takenBills).map(([key, value]) => (
+                    <Box key={key} display="flex" alignItems="center" m={2}>
+                      <img width={100} src={billsImages[key]} />
+                      <Typography ml={1}> x {value}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+            {remainder && (
+              <Typography>
+                Остаток: <b>{currencyFormat(remainder, '', '₽')}</b>
+              </Typography>
+            )}
+          </Box>
+        ) : (
+          <Typography variant="h4" fontWeight="bold" fontSize={22}>
+            Купюры закончились
+          </Typography>
+        )}
       </Box>
       <Popover
         id={popperId}
         open={isBillsInfoOpen}
         anchorEl={anchorEl}
         onClose={closeBillsInfo}
-        anchorOrigin={{
-          horizontal: "left",
-          vertical: "bottom",
-        }}
+        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
       >
         <Box p={1}>
           <Typography variant="h4" m={1} fontWeight="bold" fontSize={20}>
@@ -115,8 +157,8 @@ const ATM = () => {
           </Typography>
           {Object.entries(bills).map(([key, value]) => (
             <Box key={key} display="flex" alignItems="center" m={2}>
-              <Typography mr={1}>{value} x </Typography>
               <img width={100} src={billsImages[key]} />
+              <Typography ml={1}> x {value}</Typography>
             </Box>
           ))}
         </Box>

@@ -1,3 +1,3 @@
-export type FormValues = {
+export type formValuesType = {
   withdrawal: string;
 };

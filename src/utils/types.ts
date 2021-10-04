@@ -1,0 +1,1 @@
+export type billsType = Record<string, number>;

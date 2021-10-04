@@ -1,6 +1,6 @@
-import { TextFieldProps } from "@material-ui/core";
+import { NumberFormatProps } from "react-number-format";
 
-type PropsType = Omit<TextFieldProps, "value" | "onChange"> & {
+type PropsType = NumberFormatProps & {
   value?: string;
   onChange?: (value: string) => void;
 };
