@@ -125,7 +125,7 @@ const ATM = () => {
                 <Box>
                   {Object.entries(takenBills).map(([key, value]) => (
                     <Box key={key} display="flex" alignItems="center" m={2}>
-                      <img width={100} src={billsImages[key]} />
+                      <img width={200} src={billsImages[key]} />
                       <Typography ml={1}> x {value}</Typography>
                     </Box>
                   ))}
